@@ -18,6 +18,7 @@
 #include <vector>
 #include <fstream>
 #include <sstream>
+#include <xercesc/dom/DOM.hpp>
 #include <xercesc/parsers/XercesDOMParser.hpp>
 #include <xercesc/framework/MemBufInputSource.hpp>
 #include <xalanc/XalanTransformer/XalanTransformer.hpp>

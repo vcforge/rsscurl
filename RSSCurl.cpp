@@ -59,7 +59,8 @@ void CRSSCurl::Refresh(LPCSTR lpszUrl)
 	{
 		std::string strResult;
 
-		_TransformFeed(m_strResponseData.c_str(), m_ssXSL, strResult);
+		if( _TransformFeed(m_strResponseData.c_str(), m_ssXSL, strResult) )
+			_CreateEntries(m_strResponseData.c_str());
 	}
 
 }
@@ -74,7 +75,7 @@ int CRSSCurl::s_WriteFunction(void *ptr, size_t size, size_t nmemb, void *stream
 
 }
 
-void CRSSCurl::_TransformFeed(LPCSTR lpszInput, std::stringstream &ssXSL, std::string &strResult)
+bool CRSSCurl::_TransformFeed(LPCSTR lpszInput, std::stringstream &ssXSL, std::string &strResult)
 {
 	std::stringstream ssResult;
 	xalanc_1_10::XalanTransformer xslTransformer;
@@ -86,5 +87,20 @@ void CRSSCurl::_TransformFeed(LPCSTR lpszInput, std::stringstream &ssXSL, std::s
 
 	iResult = xslTransformer.transform(XMLInputSource, XSLInputSource, XMLResultTarget);
 	if( iResult == 0 )
+	{
 		strResult = ssResult.str();
+		return true;
+	}
+	return false;
+}
+
+void CRSSCurl::_CreateEntries(LPCSTR lpszInput)
+{
+	const xercesc_2_8::MemBufInputSource XMLInputSource(reinterpret_cast<const XMLByte*>(lpszInput), strlen(lpszInput), "");
+	xercesc_2_8::XercesDOMParser xmlParser;
+
+	xmlParser.setValidationScheme(xercesc_2_8::XercesDOMParser::Val_Never);
+	xmlParser.parse(XMLInputSource);
+	if( !xmlParser.getDocument()->hasChildNodes() || !xmlParser.getDocument()->getChildNodes()->item(0)->hasChildNodes() )
+		return;
 }
