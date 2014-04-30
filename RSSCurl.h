@@ -15,8 +15,11 @@ public:
 	CRSSCurl();
 	virtual ~CRSSCurl();
 
+	void Refresh();
+
 protected:
 	CURL* m_pCURL;
+	char m_szErrorBuffer[CURL_ERROR_SIZE];
 
 	struct _tagFeed
 	{
@@ -24,6 +27,8 @@ protected:
 	};
 	std::vector<struct _tagFeed> m_vFeeds;
 
+private:
+	static int s_WriteFunction(void* ptr, size_t size, size_t nmemb, void* stream);
 };
 
 #endif // !defined(AFX_RSSCURL_H__CB90B784_F34D_43FB_9DB7_94D53FBCEC9B__INCLUDED_)
