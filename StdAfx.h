@@ -14,7 +14,10 @@
 
 
 // TODO: reference additional headers your program requires here
+#pragma warning(disable: 4786)
+
 #include <curl/curl.h>
+#include <map>
 #include <vector>
 #include <fstream>
 #include <sstream>

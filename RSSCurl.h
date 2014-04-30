@@ -9,6 +9,8 @@
 #pragma once
 #endif // _MSC_VER > 1000
 
+struct _tagEntry;
+
 class CRSSCurl  
 {
 public:
@@ -22,14 +24,11 @@ protected:
 	std::string m_strResponseData;
 	char m_szErrorBuffer[CURL_ERROR_SIZE];
 
-	struct _tagEntry
-	{
-		bool bIsLive;
-	};
 	std::vector<struct _tagEntry> m_vEntries;
 
 private:
-	std::stringstream m_ssXSL;
+	std::stringstream m_ssRSS20XSL;
+	std::stringstream m_ssAtom10XSL;
 
 	static int s_WriteFunction(void* ptr, size_t size, size_t nmemb, void* stream);
 	inline bool _TransformFeed(LPCSTR lpszInput, std::stringstream& ssXSLT, std::string& strResult);

@@ -9,6 +9,37 @@
 // Construction/Destruction
 //////////////////////////////////////////////////////////////////////
 
+struct _tagEntry
+{
+	_tagEntry(const xercesc_2_8::DOMNode* const pNode);
+
+	std::string strUniqueId;
+	bool bIsLive;
+
+private:
+	std::map<std::string, std::string> mapstrEntryElements;
+};
+
+std::string _XmlCharsToStdString(const XMLCh *const xmlChars)
+{
+	char* stdChars = xercesc_2_8::XMLString::transcode(xmlChars);
+	const std::string strChars = std::string(stdChars);
+
+	xercesc_2_8::XMLString::release(&stdChars);
+	return strChars;
+}
+
+void _LoadXSLFile(LPCSTR lpszXSLFile, std::stringstream &ssXSL)
+{
+	std::ifstream ifsXSL(lpszXSLFile, std::ios_base::binary | std::ios_base::in);
+
+	if( ifsXSL )
+	{
+		ifsXSL.get(*ssXSL.rdbuf(), '\0');
+		ssXSL.seekg(std::stringstream::beg);
+	}
+}
+
 CRSSCurl::CRSSCurl()
 {
 	m_pCURL = curl_easy_init();
@@ -28,13 +59,8 @@ CRSSCurl::CRSSCurl()
 	curl_easy_setopt(m_pCURL, CURLOPT_WRITEFUNCTION, &s_WriteFunction);
 	curl_easy_setopt(m_pCURL, CURLOPT_WRITEDATA, this);
 
-	std::ifstream ifsXSL("xsl/RSS_20_xsl.txt", std::ios_base::binary | std::ios_base::in);
-
-	if( ifsXSL )
-	{
-		ifsXSL.get(*m_ssXSL.rdbuf(), '\0');
-		m_ssXSL.seekg(std::stringstream::beg);
-	}
+	_LoadXSLFile("xsl/RSS_20_xsl.txt", m_ssRSS20XSL);
+	_LoadXSLFile("xsl/Atom_10_xsl.txt", m_ssAtom10XSL);
 
 }
 
@@ -59,8 +85,42 @@ void CRSSCurl::Refresh(LPCSTR lpszUrl)
 	{
 		std::string strResult;
 
-		if( _TransformFeed(m_strResponseData.c_str(), m_ssXSL, strResult) )
-			_CreateEntries(m_strResponseData.c_str());
+		if( _TransformFeed(m_strResponseData.c_str(), m_ssRSS20XSL, strResult) )	// rss 2.0
+		{
+		}
+		else if( _TransformFeed(m_strResponseData.c_str(), m_ssAtom10XSL, strResult) )	// Atom 1.0
+		{
+		}
+	}
+
+}
+
+_tagEntry::_tagEntry(const xercesc_2_8::DOMNode *const pNode)
+{
+	const xercesc_2_8::DOMNodeList* const pChildNodes = pNode->getChildNodes();
+	XMLSize_t cChildNodes = pChildNodes->getLength();
+
+	for( XMLSize_t nNode = 0; nNode < cChildNodes; nNode++ )
+	{
+		const xercesc_2_8::DOMNode* const pChildNode = pChildNodes->item(nNode);
+		const std::string strNodeName = _XmlCharsToStdString(pChildNode->getNodeName());
+		const std::string strTextContent = _XmlCharsToStdString(pChildNode->getTextContent());
+
+		if( strNodeName == "#text" )
+			continue;
+		if( xercesc_2_8::XMLString::equals(strNodeName.c_str(), "entryUniqueId") )
+		{
+			strUniqueId = strTextContent;
+			mapstrEntryElements["entryUniqueId"] = strTextContent;
+		}
+		else if( xercesc_2_8::XMLString::equals(strNodeName.c_str(), "publishDateTime") )
+		{
+			mapstrEntryElements["publishDateTime"] = strTextContent;
+		}
+		else
+			mapstrEntryElements[strNodeName] = strTextContent;
+		if( strUniqueId.empty() )
+			strUniqueId = mapstrEntryElements["url"];
 	}
 
 }
@@ -89,7 +149,7 @@ bool CRSSCurl::_TransformFeed(LPCSTR lpszInput, std::stringstream &ssXSL, std::s
 	if( iResult == 0 )
 	{
 		strResult = ssResult.str();
-		return true;
+		return !strResult.empty();
 	}
 	return false;
 }
@@ -103,4 +163,33 @@ void CRSSCurl::_CreateEntries(LPCSTR lpszInput)
 	xmlParser.parse(XMLInputSource);
 	if( !xmlParser.getDocument()->hasChildNodes() || !xmlParser.getDocument()->getChildNodes()->item(0)->hasChildNodes() )
 		return;
+
+	const xercesc_2_8::DOMNodeList* const pChildNodes = xmlParser.getDocument()->getChildNodes()->item(0)->getChildNodes();
+	XMLSize_t cChildNodes = pChildNodes->getLength();
+
+	for( XMLSize_t nNode = 0; nNode < cChildNodes; nNode++ )
+	{
+		const xercesc_2_8::DOMNode* const pChildNode = pChildNodes->item(nNode);
+		const std::string strNodeName = _XmlCharsToStdString(pChildNode->getNodeName());
+
+		if( strNodeName == "#text" )
+			continue;
+		if( xercesc_2_8::XMLString::equals(strNodeName.c_str(), "entry") )
+		{
+			struct _tagEntry Entry(pChildNode);
+
+			for( int nEntry = 0; nEntry < m_vEntries.size(); nEntry++ )
+			{
+				if( m_vEntries[nEntry].strUniqueId == Entry.strUniqueId )
+					break;
+			}
+			if( nEntry >= m_vEntries.size() )
+				m_vEntries.push_back(Entry);
+		}
+		else
+		{
+			const std::string strTextContent = _XmlCharsToStdString(pChildNode->getTextContent());
+		}
+	}
+
 }
