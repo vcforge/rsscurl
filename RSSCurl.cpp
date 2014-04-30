@@ -1,0 +1,26 @@
+// RSSCurl.cpp: implementation of the CRSSCurl class.
+//
+//////////////////////////////////////////////////////////////////////
+
+#include "stdafx.h"
+#include "RSSCurl.h"
+
+//////////////////////////////////////////////////////////////////////
+// Construction/Destruction
+//////////////////////////////////////////////////////////////////////
+
+CRSSCurl::CRSSCurl()
+{
+	m_pCURL = curl_easy_init();
+
+}
+
+CRSSCurl::~CRSSCurl()
+{
+	if( m_pCURL != NULL )
+	{
+		curl_easy_cleanup(m_pCURL);
+		m_pCURL = NULL;
+	}
+
+}
