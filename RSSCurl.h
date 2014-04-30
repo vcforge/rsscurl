@@ -18,6 +18,12 @@ public:
 protected:
 	CURL* m_pCURL;
 
+	struct _tagFeed
+	{
+		bool bIsLive;
+	};
+	std::vector<struct _tagFeed> m_vFeeds;
+
 };
 
 #endif // !defined(AFX_RSSCURL_H__CB90B784_F34D_43FB_9DB7_94D53FBCEC9B__INCLUDED_)
