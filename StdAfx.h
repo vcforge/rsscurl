@@ -16,6 +16,8 @@
 // TODO: reference additional headers your program requires here
 #include <curl/curl.h>
 #include <vector>
+#include <fstream>
+#include <sstream>
 
 //{{AFX_INSERT_LOCATION}}
 // Microsoft Visual C++ will insert additional declarations immediately before the previous line.

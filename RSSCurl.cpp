@@ -25,6 +25,14 @@ CRSSCurl::CRSSCurl()
 	curl_easy_setopt(m_pCURL, CURLOPT_WRITEFUNCTION, &s_WriteFunction);
 	curl_easy_setopt(m_pCURL, CURLOPT_WRITEDATA, this);
 
+	std::ifstream ifsXSLT("xsl/RSS_20_xsl.txt", std::ios_base::binary | std::ios_base::in);
+
+	if( ifsXSLT )
+	{
+		ifsXSLT.get(*m_ssXSLT.rdbuf(), '\0');
+		m_ssXSLT.seekg(std::stringstream::beg);
+	}
+
 }
 
 CRSSCurl::~CRSSCurl()
@@ -44,6 +52,9 @@ void CRSSCurl::Refresh(LPCSTR lpszUrl)
 
 	if( curl_easy_perform(m_pCURL) == CURLE_OK )
 	{
+		std::string strResult;
+
+		_TransformFeed(m_ssXSLT, strResult);
 	}
 
 }
@@ -56,4 +67,8 @@ int CRSSCurl::s_WriteFunction(void *ptr, size_t size, size_t nmemb, void *stream
 	pRSSCurl->m_strResponseData.append(pszBuffer, size * nmemb);
 	return size * nmemb;
 
+}
+
+void CRSSCurl::_TransformFeed(std::stringstream &ssXSLT, std::string &strResult)
+{
 }

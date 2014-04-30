@@ -29,7 +29,10 @@ protected:
 	std::vector<struct _tagFeed> m_vFeeds;
 
 private:
+	std::stringstream m_ssXSLT;
+
 	static int s_WriteFunction(void* ptr, size_t size, size_t nmemb, void* stream);
+	inline void _TransformFeed(std::stringstream& ssXSLT, std::string& strResult);
 };
 
 #endif // !defined(AFX_RSSCURL_H__CB90B784_F34D_43FB_9DB7_94D53FBCEC9B__INCLUDED_)
