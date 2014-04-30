@@ -37,13 +37,23 @@ CRSSCurl::~CRSSCurl()
 
 }
 
-void CRSSCurl::Refresh()
+void CRSSCurl::Refresh(LPCSTR lpszUrl)
 {
+	// Set http request and url
+	curl_easy_setopt(m_pCURL, CURLOPT_URL, lpszUrl);
+
+	if( curl_easy_perform(m_pCURL) == CURLE_OK )
+	{
+	}
 
 }
 
 int CRSSCurl::s_WriteFunction(void *ptr, size_t size, size_t nmemb, void *stream)
 {
-	return 0;
+	CRSSCurl* pRSSCurl = (CRSSCurl*)stream;
+	char* pszBuffer = (char*)ptr;
+
+	pRSSCurl->m_strResponseData.append(pszBuffer, size * nmemb);
+	return size * nmemb;
 
 }

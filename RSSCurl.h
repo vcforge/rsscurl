@@ -15,10 +15,11 @@ public:
 	CRSSCurl();
 	virtual ~CRSSCurl();
 
-	void Refresh();
+	void Refresh(LPCSTR lpszUrl);
 
 protected:
 	CURL* m_pCURL;
+	std::string m_strResponseData;
 	char m_szErrorBuffer[CURL_ERROR_SIZE];
 
 	struct _tagFeed
