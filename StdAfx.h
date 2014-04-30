@@ -18,6 +18,9 @@
 #include <vector>
 #include <fstream>
 #include <sstream>
+#include <xercesc/parsers/XercesDOMParser.hpp>
+#include <xercesc/framework/MemBufInputSource.hpp>
+#include <xalanc/XalanTransformer/XalanTransformer.hpp>
 
 //{{AFX_INSERT_LOCATION}}
 // Microsoft Visual C++ will insert additional declarations immediately before the previous line.
