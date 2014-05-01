@@ -24,6 +24,7 @@ protected:
 	std::string m_strResponseData;
 	char m_szErrorBuffer[CURL_ERROR_SIZE];
 
+	std::map<std::string, std::string> m_mapstrFeedElements;
 	std::vector<struct _tagEntry> m_vEntries;
 
 private:

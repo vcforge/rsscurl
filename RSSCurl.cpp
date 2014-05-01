@@ -85,11 +85,10 @@ void CRSSCurl::Refresh(LPCSTR lpszUrl)
 	{
 		std::string strResult;
 
-		if( _TransformFeed(m_strResponseData.c_str(), m_ssRSS20XSL, strResult) )	// rss 2.0
+		if( _TransformFeed(m_strResponseData.c_str(), m_ssRSS20XSL, strResult) ||	// rss 2.0
+			_TransformFeed(m_strResponseData.c_str(), m_ssAtom10XSL, strResult) )	// Atom 1.0
 		{
-		}
-		else if( _TransformFeed(m_strResponseData.c_str(), m_ssAtom10XSL, strResult) )	// Atom 1.0
-		{
+			_CreateEntries(strResult.c_str());
 		}
 	}
 
@@ -189,6 +188,8 @@ void CRSSCurl::_CreateEntries(LPCSTR lpszInput)
 		else
 		{
 			const std::string strTextContent = _XmlCharsToStdString(pChildNode->getTextContent());
+
+			m_mapstrFeedElements.insert(std::make_pair<std::string, std::string>(strNodeName, strTextContent));
 		}
 	}
 
